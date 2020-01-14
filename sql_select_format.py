@@ -101,11 +101,14 @@ def wrap(sql):
     wrapped = []
     lines = sql.splitlines()
     for line in lines:
-        line_indent = len(line) - len(line.lstrip(' '))
-        wrapped_lines = textwrap.wrap(line.strip(), 76 - line_indent)
-        wrapped.append(line_indent * ' ' + wrapped_lines[0])
-        for wl in wrapped_lines[1:]:
-            wrapped.append(line_indent * ' ' + INDENT + wl)
+        initial_indent = re.search('^ *', line).group(0)
+        subsequent_indent = initial_indent + INDENT
+        wrapped_lines = textwrap.fill(line.strip(),
+            width = 104 - len(initial_indent), break_long_words=False,
+            break_on_hyphens=False,
+            initial_indent=initial_indent,
+            subsequent_indent=subsequent_indent)
+        wrapped.append(wrapped_lines)
     return '\n'.join(wrapped)
 
 
@@ -295,7 +298,7 @@ def normalize(text):
 class SqlSelectFormatCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         text = self.view.substr(self.view.sel()[0])
-        sql = format_sql(text)
+        sql = '\n' + format_sql(text) + '\n'
         if normalize(text) == normalize(sql):
             self.view.replace(edit, self.view.sel()[0], sql)
         else:
