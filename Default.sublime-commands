@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "SQL: Format SELECT",
+        "command": "sql_select_format"
+    }
+]
