@@ -40,7 +40,7 @@ def uppercase_keywords(sql):
         'NOT', 'LEFT', 'RIGHT', 'FULL', 'INNER', 'OUTER', 'JOIN',
         'GROUP', 'BY', 'OVER', 'HAVING', 'BETWEEN', 'ON', 'CASE', 'WHEN',
         'THEN', 'DISTINCT', 'ORDER', 'DESC', 'ASC',
-        'UNION', 'ALL', 'END']
+        'UNION', 'ALL', 'END', 'LIMIT']
     for keyword in keywords:
         sql = re.sub(r'\b' + keyword + r'\b', keyword, sql,
             flags = re.IGNORECASE)
@@ -93,7 +93,7 @@ def split_comma_sep_expressions(text):
 def select_blocks(sql):
     # Note: this requires sql to be all on one line with consistent spacing
     sql, parens_map = protect_parens(sql, 'P')
-    blocks = re.sub(' (SELECT|FROM|WHERE|HAVING|GROUP|UNION|ORDER) ',
+    blocks = re.sub(' (SELECT|FROM|WHERE|HAVING|GROUP|UNION|ORDER|LIMIT) ',
         r'\n\1 ', sql).splitlines()
     return [unprotect(block, parens_map) for block in blocks]
 
@@ -165,7 +165,7 @@ WHERE
     'last option')
 GROUP BY
   person_id,
-  option_str)
+  option_str limit 20)
 select a, myfunction( b,  c ) as b1, 'hi there' as d -- a comment
 from t inner join z on t.id = z.id
 -- end comment
@@ -230,6 +230,8 @@ def format_select_sql(sql):
         elif block.startswith('ORDER'):
             block = format_select_clause(block)
         elif block.startswith('UNION'):
+            block = format_union_clause(block)
+        elif block.startswith('LIMIT'):
             block = format_union_clause(block)
         else:
             raise ValueError('Unknown block type:' + block)
