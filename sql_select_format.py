@@ -167,7 +167,7 @@ GROUP BY
   person_id,
   option_str limit 20)
 select a, myfunction( b,  c ) as b1, 'hi there' as d -- a comment
-from t inner join z on t.id = z.id
+from t inner join z on t.id = z.id and t.col = z.col
 -- end comment
 """
 
@@ -194,7 +194,7 @@ def format_select_clause(sql):
 def format_from_clause(sql):
     sql, parens_map = protect_parens(sql, 'P')
     sql = re.sub('^FROM ', 'FROM\n', sql)
-    sql = re.sub(' (ON|INNER|LEFT|FULL) ', r'\n\1 ', sql)
+    sql = re.sub(' (ON|INNER|LEFT|FULL|AND|OR) ', r'\n\1 ', sql)
     sql = sql.replace(' JOIN ', ' JOIN\n')
     for key in parens_map:
         if parens_map[key].startswith('(SELECT'):
