@@ -1,5 +1,6 @@
 import re
 import textwrap
+import unittest
 
 try:
     import sublime
@@ -10,6 +11,24 @@ except:
 
 INDENT = '  '
 SEP = '-' * 40
+
+# =====================================================================
+
+class TestSqlFormat(unittest.TestCase):
+
+    def test_select(self):
+        input_sql = 'select a, b from d'
+        desired_output = ('SELECT\n' + INDENT + 'a,\n' + INDENT +
+            'b\nFROM\n' + INDENT + 'd')
+        actual_output = format_sql(input_sql)
+        print('Input:\n' + input_sql)
+        print('Desired output:\n' + desired_output)
+        print('Actual output:\n' + actual_output)
+        print(repr(desired_output))
+        print(repr(actual_output))
+        self.assertEqual(desired_output, actual_output)
+
+# =====================================================================
 
 def split_parens(text):
     istart = []  # stack of indices of opening parentheses
@@ -307,9 +326,11 @@ class SqlSelectFormatCommand(sublime_plugin.TextCommand):
             print('Unable to transform SQL')
 
 if __name__ == '__main__':
-    new_sql = format_sql(sample_sql)
-    if normalize(sample_sql) != normalize(new_sql):
-        print('Normalized sample:', normalize(sample_sql))
-        print('Normalized new:', normalize(new_sql))
-    else:
-        print(new_sql)
+    # new_sql = format_sql(sample_sql)
+    # if normalize(sample_sql) != normalize(new_sql):
+    #     print('Normalized sample:', normalize(sample_sql))
+    #     print('Normalized new:', normalize(new_sql))
+    # else:
+    #     print(new_sql)
+    unittest.main()
+
