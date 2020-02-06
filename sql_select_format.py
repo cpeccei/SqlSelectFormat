@@ -18,8 +18,14 @@ class TestSqlFormat(unittest.TestCase):
 
     def test_select(self):
         input_sql = 'select a, b from d'
-        desired_output = ('SELECT\n' + INDENT + 'a,\n' + INDENT +
-            'b\nFROM\n' + INDENT + 'd')
+        desired_output = """
+SELECT
+  a,
+  b
+FROM
+  d
+"""
+        desired_output = re.sub('  ', INDENT, desired_output.strip())
         actual_output = format_sql(input_sql)
         print('Input:\n' + input_sql)
         print('Desired output:\n' + desired_output)
@@ -27,6 +33,63 @@ class TestSqlFormat(unittest.TestCase):
         print(repr(desired_output))
         print(repr(actual_output))
         self.assertEqual(desired_output, actual_output)
+
+    def test_subquery(self):
+        input_sql = 'select * from (select a, b from d) x'
+        desired_output = """
+SELECT
+  *
+FROM
+  (SELECT
+    a,
+    b
+  FROM
+    d) x
+"""
+        desired_output = re.sub('  ', INDENT, desired_output.strip())
+        actual_output = format_sql(input_sql)
+        print('Input:\n' + input_sql)
+        print('Desired output:\n' + desired_output)
+        print('Actual output:\n' + actual_output)
+        print(repr(desired_output))
+        print(repr(actual_output))
+        self.assertEqual(desired_output, actual_output)
+
+    def test_with(self):
+        input_sql = 'with a as (select * from x), b as (select * from y) select * from a inner join b on a.id = b.id'
+        desired_output = """
+WITH
+---
+a AS
+(SELECT
+  *
+FROM
+  x),
+---
+b AS
+(SELECT
+  *
+FROM
+  y)
+---
+SELECT
+  *
+FROM
+  a
+  INNER JOIN
+  b
+  ON a.id = b.id
+"""
+        desired_output = re.sub('  ', INDENT, desired_output.strip())
+        desired_output = desired_output.replace('---', SEP)
+        actual_output = format_sql(input_sql)
+        print('Input:\n' + input_sql)
+        print('Desired output:\n' + desired_output)
+        print('Actual output:\n' + actual_output)
+        print(repr(desired_output))
+        print(repr(actual_output))
+        self.assertEqual(desired_output, actual_output)
+
 
 # =====================================================================
 
