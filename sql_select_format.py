@@ -1,6 +1,6 @@
 import re
 import textwrap
-import unittest
+import pathlib
 
 try:
     import sublime
@@ -12,86 +12,29 @@ except:
 INDENT = '  '
 SEP = '-' * 40
 
-# =====================================================================
-
-class TestSqlFormat(unittest.TestCase):
-
-    def test_select(self):
-        input_sql = 'select a, b from d'
-        desired_output = """
-SELECT
-  a,
-  b
-FROM
-  d
-"""
-        desired_output = re.sub('  ', INDENT, desired_output.strip())
-        actual_output = format_sql(input_sql)
-        print('Input:\n' + input_sql)
-        print('Desired output:\n' + desired_output)
-        print('Actual output:\n' + actual_output)
-        print(repr(desired_output))
-        print(repr(actual_output))
-        self.assertEqual(desired_output, actual_output)
-
-    def test_subquery(self):
-        input_sql = 'select * from (select a, b from d) x'
-        desired_output = """
-SELECT
-  *
-FROM
-  (SELECT
-    a,
-    b
-  FROM
-    d) x
-"""
-        desired_output = re.sub('  ', INDENT, desired_output.strip())
-        actual_output = format_sql(input_sql)
-        print('Input:\n' + input_sql)
-        print('Desired output:\n' + desired_output)
-        print('Actual output:\n' + actual_output)
-        print(repr(desired_output))
-        print(repr(actual_output))
-        self.assertEqual(desired_output, actual_output)
-
-    def test_with(self):
-        input_sql = 'with a as (select * from x), b as (select * from y) select * from a inner join b on a.id = b.id'
-        desired_output = """
-WITH
----
-a AS
-(SELECT
-  *
-FROM
-  x),
----
-b AS
-(SELECT
-  *
-FROM
-  y)
----
-SELECT
-  *
-FROM
-  a
-  INNER JOIN
-  b
-  ON a.id = b.id
-"""
-        desired_output = re.sub('  ', INDENT, desired_output.strip())
+def parse_testcases(testcase_file):
+    p = pathlib.Path(__file__).parent / testcase_file
+    with p.open('rt') as f:
+        fields = re.split('(#.*)', f.read())
+    testcases = []
+    for i in range(1, len(fields), 2):
+        test_name = fields[i][1:].strip()
+        input_sql, desired_output = fields[i + 1].split('->')
+        input_sql = input_sql.strip()
+        desired_output = desired_output.strip()
+        desired_output = desired_output.replace('  ', INDENT)
         desired_output = desired_output.replace('---', SEP)
+        testcases.append((test_name, input_sql, desired_output))
+    return testcases
+
+def run_tests(testcase_file):
+    print('Running tests')
+    testcases = parse_testcases(testcase_file)
+    for test_name, input_sql, desired_output in testcases:
         actual_output = format_sql(input_sql)
-        print('Input:\n' + input_sql)
-        print('Desired output:\n' + desired_output)
-        print('Actual output:\n' + actual_output)
-        print(repr(desired_output))
-        print(repr(actual_output))
-        self.assertEqual(desired_output, actual_output)
-
-
-# =====================================================================
+        result = 'PASS' if actual_output == desired_output else 'FAIL'
+        if result == 'FAIL':
+            print(result, 'Test name:', test_name)
 
 def split_parens(text):
     istart = []  # stack of indices of opening parentheses
@@ -389,11 +332,5 @@ class SqlSelectFormatCommand(sublime_plugin.TextCommand):
             print('Unable to transform SQL')
 
 if __name__ == '__main__':
-    # new_sql = format_sql(sample_sql)
-    # if normalize(sample_sql) != normalize(new_sql):
-    #     print('Normalized sample:', normalize(sample_sql))
-    #     print('Normalized new:', normalize(new_sql))
-    # else:
-    #     print(new_sql)
-    unittest.main()
+    run_tests('testcases.txt')
 

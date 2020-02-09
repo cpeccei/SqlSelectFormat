@@ -1,0 +1,46 @@
+# select
+select a, b from d
+->
+SELECT
+  a,
+  b
+FROM
+  d
+
+# subquery
+select * from (select a, b from d) x
+->
+SELECT
+  *
+FROM
+  (SELECT
+    a,
+    b
+  FROM
+    d) x
+
+# with
+with a as (select * from x), b as (select * from y) select * from
+a inner join b on a.id = b.id
+->
+WITH
+---
+a AS
+(SELECT
+  *
+FROM
+  x),
+---
+b AS
+(SELECT
+  *
+FROM
+  y)
+---
+SELECT
+  *
+FROM
+  a
+  INNER JOIN
+  b
+  ON a.id = b.id
