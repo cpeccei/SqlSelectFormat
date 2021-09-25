@@ -1,4 +1,24 @@
-# select
+### comments and strings
+select
+  -- test out double quotes
+  a as "column 1",
+  /* and
+  multiline
+  comments */
+  concat('this is', b) AS b_fmt from d
+->
+SELECT
+  -- test out double quotes
+  a AS "column 1",
+  /* and
+  multiline
+  comments */
+  CONCAT('this is', b) AS b_fmt
+FROM
+  d
+
+
+### select
 select a, b from d
 ->
 SELECT
@@ -7,7 +27,7 @@ SELECT
 FROM
   d
 
-# subquery
+### subquery
 select * from (select a, b from d) x
 ->
 SELECT
@@ -19,7 +39,7 @@ FROM
   FROM
     d) x
 
-# with
+### with
 with a as (select * from x), b as (select * from y) select * from
 a inner join b on a.id = b.id
 ->
@@ -45,7 +65,7 @@ FROM
   b
   ON a.id = b.id
 
-# long columns
+### long columns
 SELECT
   SUM(ckd.total_widgets_2017) OVER
     (ORDER BY ckd.date
