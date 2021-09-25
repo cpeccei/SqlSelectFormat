@@ -18,13 +18,35 @@ def parse_testcases():
 
 def protect(text):
     patterns = ('".*?"', "'.*?'", '--.*', '(?s)/\*.*?\*/')
+    protected = []
+    def subfunc(m):
+        protected.append(m.group(0))
+        return '[protected' + str(len(protected)) + ']'
     for pat in patterns:
-        text = re.sub(pat, lambda m: '[' + m.group(0) + ']', text)
+        text = re.sub(pat, subfunc, text)
     return text
 
+def uppercase_keywords(tokens):
+    # Convert all keywords to uppercase
+    keywords = ['WITH', 'AS', 'SELECT', 'FROM', 'WHERE', 'AND', 'OR',
+        'NOT', 'LEFT', 'RIGHT', 'FULL', 'INNER', 'OUTER', 'JOIN',
+        'GROUP', 'BY', 'OVER', 'HAVING', 'BETWEEN', 'ON', 'CASE', 'WHEN',
+        'THEN', 'DISTINCT', 'ORDER', 'DESC', 'ASC',
+        'UNION', 'ALL', 'END', 'LIMIT']
+    return [token.upper() if token.upper() in keywords else token for
+        token in tokens]
+
+def uppercase_functions(tokens):
+    return [re.sub('^\w+?\(', lambda m: m.group(0).upper(), token) for
+        token in tokens]
 
 def format_sql(sql):
-    return protect(sql)
+    s = protect(sql)
+    tokens = s.split()
+    tokens = uppercase_keywords(tokens)
+    tokens = uppercase_functions(tokens)
+    formatted_sql = tokens
+    return formatted_sql
 
 if __name__ == '__main__':
     testcases = parse_testcases()
