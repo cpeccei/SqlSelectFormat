@@ -68,8 +68,8 @@ FROM
 ### long columns
 SELECT
   SUM(ckd.total_widgets_2017) OVER
-    (ORDER BY ckd.date
-    ROWS UNBOUNDED PRECEDING) AS total_widgets_2017
+    (order BY ckd.date
+    ROWS UNBOUNDED preceding) AS total_widgets_2017
 FROM
   cds_widgets_daily ckd
 ->

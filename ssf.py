@@ -32,25 +32,36 @@ def uppercase_keywords(tokens):
         'NOT', 'LEFT', 'RIGHT', 'FULL', 'INNER', 'OUTER', 'JOIN',
         'GROUP', 'BY', 'OVER', 'HAVING', 'BETWEEN', 'ON', 'CASE', 'WHEN',
         'THEN', 'DISTINCT', 'ORDER', 'DESC', 'ASC',
-        'UNION', 'ALL', 'END', 'LIMIT']
-    return [token.upper() if token.upper() in keywords else token for
-        token in tokens]
+        'UNION', 'ALL', 'END', 'LIMIT', 'UNBOUNDED', 'ROWS', 'PRECEDING',
+        'FOLLOWING']
+    return [token.upper() if token.strip('()').upper() in keywords
+        else token for token in tokens]
 
 def uppercase_functions(tokens):
     return [re.sub('^\w+?\(', lambda m: m.group(0).upper(), token) for
         token in tokens]
 
+def add_newlines_and_indents(tokens):
+    standalone = ['SELECT', 'FROM', 'WHERE', 'JOIN', 'HAVING',
+        'WITH']
+    new_tokens = ['\n' + token + '\n' if
+        token.strip('()') in standalone else token for
+        token in tokens]
+    return new_tokens
+
 def format_sql(sql):
     s = protect(sql)
+    # tokens = re.sub('([(),])', r' \1 ', s).split()
     tokens = s.split()
     tokens = uppercase_keywords(tokens)
     tokens = uppercase_functions(tokens)
+    tokens = add_newlines_and_indents(tokens)
     formatted_sql = tokens
-    return formatted_sql
+    return ' '.join(formatted_sql)
 
 if __name__ == '__main__':
     testcases = parse_testcases()
-    for (test_name, input_sql, expected_output) in testcases[:1]:
+    for (test_name, input_sql, expected_output) in testcases:
         print('Test name:', test_name)
         print('\nInput:')
         print(input_sql)
